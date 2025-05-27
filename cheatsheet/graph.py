@@ -1,6 +1,3 @@
-#最小生成树,
-#每次选取连接新节点的边中边权最小的？--Prim
-#Kruskal
 from typing import *
 import heapq,sys
 from collections import deque,defaultdict
@@ -17,6 +14,8 @@ class Vertex:
         if self.parent==self:return self
         self.parent=self.parent.find_parent()
         return self.parent
+    def __hash__(self):
+        return hash(self.key)
 class Graph:
     #基本表示
     def __init__(self):
@@ -24,8 +23,48 @@ class Graph:
     def add_edge(self,outvert:Vertex,invert:Vertex,wt:int=1):
         outvert.nbr[invert.key]=(wt,invert)
     #图算法
+    def topological_order_with_dfs(self):
+        visited={}#dict[vertex:int]
+        visiting=set()
+        unvisited=set(self.vertices.values())#set[vertex]
+        def inner(vert:Vertex):
+            if vert in unvisited:unvisited.remove(vert)
+            if vert in visiting:
+                raise TypeError('No topological sort in cyclic graph')
+            visiting.add(vert)
+            for i in set(vert.nbr.values())&unvisited:
+                inner(i)
+            visiting.remove(vert)
+            visited[len(visited)]=vert
+        while unvisited:
+            inner(unvisited.pop())
+        return ' '.join(visited[i].key for i in range(len(visited)-1,-1,-1))
+    def topological_order_with_Kahn(self):
+        #入度表
+        degree_dic=defaultdict(set)#dict[Vertex,set[Vertex]]
+        queue=[]
+        for i in self.vertices.values():#dict[str:Vertex]
+            queue.append(i)
+            for j in i.nbr.values():
+                degree_dic[j].add(i)
+        queue=deque(queue)
+        visited={}#dict[int:Vertex]
+        visited_set=set()
+        cnt=0
+        while queue:
+            if cnt==len(queue):
+                raise TypeError('No topological sort in cyclic graph')
+            a=queue.popleft()
+            if degree_dic[a]-visited_set==set():
+                visited[len(visited)]=a
+                visited_set.add(a)
+                cnt=0
+                continue
+            cnt+=1
+            queue.append(a)
+        return '\n'.join(visited[i].key for i in range(len(visited)))
     def min_span_tree_prim(self,startvert:Vertex)->int:
-        #prim
+        #prim适合稠密图
         #初始化(无向图)
         unvisited=set(self.vertices.values())
         heap=[]
@@ -139,8 +178,30 @@ class Graph:
                 dfs2(vert)
         return scclst
     def scc_tarjan(self)->list[set]:
-        pass
+        #强联通单元,并查集写法(疑似tarjan是在研究强联通单元时发明的并查集)
+        def union(vert:Vertex,par:Vertex):
+            vertp=vert.find_parent()
+            parp=par.find_parent()
+            if vertp!=parp:vertp.parent=parp
+        stack:list[Vertex]=[]
+        stack_find=set()
+        unvisited=set(self.vertices.values())
+        def dfs(startvert:Vertex):
+            if startvert in unvisited:unvisited.remove(startvert)
+            stack.append(startvert)
+            stack_find.add(startvert)
+            for wt,adjvert in startvert.nbr.values():
+                if adjvert in stack_find:#有环
+                    for i in range(len(stack)-1,-1,-1):
+                        if stack[i].find_parent()==adjvert.find_parent():break
+                        union(stack[i],adjvert)
+                else:dfs(adjvert)
+            stack.pop()
+            stack_find.remove(startvert)
+        while unvisited:dfs(unvisited.pop())
+        #后期处理
+        s=defaultdict(set)
+        for i in self.vertices.values():
+            s[i.find_parent()].add(i.key)
+        return list(s.values())
 
-#prim适合稠密图
-#强联通单元
-#检测所有的负权回路
