@@ -1,6 +1,6 @@
 from typing import *
 import heapq,sys
-from collections import deque,defaultdict
+from collections import deque,defaultdict,Counter
 class Vertex:
     #图节点和树节点共用
     def __init__(self,key):
@@ -184,20 +184,20 @@ class Graph:
             parp=par.find_parent()
             if vertp!=parp:vertp.parent=parp
         stack:list[Vertex]=[]
-        stack_find=set()
+        stack_find=defaultdict(int)
         unvisited=set(self.vertices.values())
         def dfs(startvert:Vertex):
             if startvert in unvisited:unvisited.remove(startvert)
             stack.append(startvert)
-            stack_find.add(startvert)
+            stack_find[startvert]+=1
             for wt,adjvert in startvert.nbr.values():
-                if adjvert in stack_find:#有环
+                if stack_find[adjvert.find_parent()]:#有环
                     for i in range(len(stack)-1,-1,-1):
                         if stack[i].find_parent()==adjvert.find_parent():break
                         union(stack[i],adjvert)
-                else:dfs(adjvert)
+                elif adjvert in unvisited:dfs(adjvert)
             stack.pop()
-            stack_find.remove(startvert)
+            stack_find[startvert]-=1
         while unvisited:dfs(unvisited.pop())
         #后期处理
         s=defaultdict(set)
