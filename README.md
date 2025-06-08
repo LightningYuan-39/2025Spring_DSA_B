@@ -19,5 +19,5 @@
 2.期末机考前一周一定要抽出时间去机房熟悉一下机械键盘的手感（特别是像我这种重度依赖笔记本的用户）否则考试的时候会比较难受。
 
 最后放上一张图，这是我4月份的时候忙里偷闲开始立flag学习神经网络的一些程序，暑假加油！
-![](github.com/LightningYuan-39/2025Spring_DSA_B/blob/main/img/1.png)
+![](github.com/LightningYuan-39/2025Spring_DSA_B/tree/main/img/1.png)
 最后再次感谢闫老师半个学期的陪伴！
